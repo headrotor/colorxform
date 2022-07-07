@@ -14,4 +14,5 @@ The `RGBA_to_HSV()` function is somewhat more complex and is naturally an approx
 In this example, the dotted line shows the colors available by mixing the amber LED with white (from an equal mix of RGB).  The X is the point at R = G = B = A = 0.5. 
 
 
-![CIE colorspace plot showing gamut of RGB LEDS plus amber LED](https://github.com/headrotor//blob/main/amber-trajectory.png?raw=true)
+![CIE colorspace plot showing gamut of RGB LEDS plus amber LED](https://github.com/headrotor/colorxform/blob/main/amber-trajectory.png?raw=true)
+
