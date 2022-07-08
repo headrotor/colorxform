@@ -97,7 +97,11 @@ class ColorXform(object):
 
         return( x*Y/y, Y, (1 - x - y)*Y/y)
         
-        
+
+    def mix_XYZ(self, x1, y1, z1, x2, y2, z2):
+        '''mix two XYZ colors so result is normalized, see
+https://www.ledsmagazine.com/smart-lighting-iot/white-point-tuning/article/16695431/understand-color-science-to-maximize-success-with-leds-part-2-magazine'''
+        pass
 
     def rgba_to_hsv(self, r, g, b, a):
         """ convert red, green, blue, amber color components to
@@ -133,14 +137,21 @@ class ColorXform(object):
         rgba_RGB = self.matrix_mult(self.M_XYZ_to_RGB,
                                   [X, Y, Z])
 
-        # this may now be greater than range so normalize
+
         maxc = max(rgba_RGB)
         #print(f"maxc is {maxc}")
+        R = rgba_RGB[0]
+        G = rgba_RGB[1]
+        B = rgba_RGB[2]
+            
+        # this may now be greater than range so normalize
+        if maxc > 1.:
+            R = R/maxc
+            G = G/maxc
+            B = B/maxc
+            
 
-        R = rgba_RGB[0]/maxc
-        G = rgba_RGB[1]/maxc
-        B = rgba_RGB[2]/maxc
-
+        # clamp negative values from underflow    
         if R < 0:
             R = 0.
         if G < 0:
@@ -152,6 +163,7 @@ class ColorXform(object):
 
     def rgb_to_hsv(self, r, g, b):
         # from https://www.niwa.nu/2013/05/math-behind-colorspace-conversions-rgb-hsl/
+        #https://stackoverflow.com/questions/359612/how-to-convert-rgb-color-to-hsv/1626175#1626175
         maxc = max((r, g, b))
         minc = min((r, g, b))
 
@@ -161,14 +173,18 @@ class ColorXform(object):
         if val > 0.5:
             sat = ( maxc-minc)/(2.0-maxc-minc)
         else:
-            sat = (maxc-minc)/(maxc+minc)
-            
-        if maxc > 0:
-            sat = (maxc - minc)/maxc
-        else:
-            sat = 0.
+            if (maxc + minc) > 0:
+                sat = (maxc-minc)/(maxc+minc)
+            else:
+                sat = 0
+                
+        # if maxc > 0:
+        #     ##sat = (maxc - minc)/maxc
+        #     sat = 1. - (minc/maxc)
+        # else:
+        #     sat = 0.
 
-        val = maxc
+        # val = maxc
            
 
         # calculate hue
@@ -191,13 +207,16 @@ class ColorXform(object):
             
         # convert to range 0-1
         hue =  ((hue/6.) + 1.0)%1.0
-
-
-        
         return (hue, sat, val)
 
 
+    def print_hsv(self, hue, sat, val, extra=""):
+        print(f" hsv: {hue:.3f} {sat:.3f} {val:.3f} {extra}")            
 
+    def print_rgba(self, r, g, b, a, extra=""):
+        print(f"rgba: {r:.3f} {g:.3f} {b:.3f} {a:.3f} {extra}")        
+
+        
 if __name__ == '__main__':
 
     cx = ColorXform()

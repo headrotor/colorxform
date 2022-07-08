@@ -5,11 +5,11 @@ Color math for converting between color spaces for RGB + Amber LEDs
 
 `colorxform.py` --- code to  convert between RGB, RGBA (red, green blue, & amber), HSV, CIE XYZ and CIE xyY colorspaces with no library dependencies.
 
-This code was written in an attempt to get good color specification for LED light fixtures using more than standard RGB colors. Though right now only amber is supported, these methods could be easily extended to LEDs or other sources of any color. This is a standalone module and does not depend on any libraries, and is written to be easily translated into other languages (hence unPythonic constructs). 
+This code was written in an attempt to control the colors of LED light fixtures that use more than standard RGB colors. Though right now only an additional amber is supported, these methods could be easily extended to LEDs or other sources of any color. This is a standalone module and does not depend on any libraries, and is written to be easily translated into other languages (hence unPythonic constructs). 
 
 The `HSV_to_RGBA()` function divides the hue range into four sections corresponding to red, amber, green, and blue, and crossfades between them to arrive at an approximately correct hue. More details can be found at this blog post: <http://rotormind.com/blog/2015/Generating-RGBY-from-Hue/>
 
-The `RGBA_to_HSV()` function is somewhat more complex and is naturally an approximation as we are converting from a four-dimensional space to three. The approach is to convert each light source (R, G, B, and A) into the CIE XYZ space, where they can be interpolated to find the color of the resulting mixture. Once this is calculated (by a simple linear mix), the XYZ coordinates can be converted back to sRGB (albeit with a loss of gamut) and then to HSV.
+The `RGBA_to_HSV()` function is somewhat more complex and is naturally an approximation as we are converting from a four-dimensional space to three. The approach is to convert each light source (R, G, B, and A) into the [CIE XYZ](https://en.wikipedia.org/wiki/CIE_1931_color_space#Definition_of_the_CIE_XYZ_color_space) space, where they can be interpolated to find the color of the resulting mixture. Once this is calculated (by a simple linear mix), the XYZ coordinates can be converted back to sRGB (albeit with a loss of gamut) and then to HSV.
 
 In this example, the dotted line shows the colors available by mixing the amber LED with white (from an equal mix of RGB).  The X is the point at R = G = B = A = 0.5. 
 
