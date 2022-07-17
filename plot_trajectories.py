@@ -45,7 +45,8 @@ if True:
     
     print("orange XYZ:", org_XYZ)
 
-    colourspace = colour.RGB_COLOURSPACES['sRGB']
+    #colourspace = colour.RGB_COLOURSPACES['sRGB']
+        colourspace = colour.RGB_COLOURSPACES['Best RGB']
 
 
 
@@ -60,7 +61,7 @@ if True:
     )
 
 
-    matrix_RGB_to_XYZ = np.array(
+    matrix_XYZ = np.array(
         [[0.41240000, 0.35760000, 0.18050000],
          [0.21260000, 0.71520000, 0.07220000],
          [0.01930000, 0.11920000, 0.95050000]]

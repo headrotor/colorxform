@@ -10,14 +10,27 @@ class ColorXform(object):
 
         # these are sRGB, D65 transforms from
         # http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
-        self.M_XYZ_to_RGB = [[3.24062548, -1.53720797, -0.49862860],
-                             [-0.96893071, 1.87575606, 0.04151752],
-                             [0.05571012, -0.20402105, 1.05699594]]
+        # self.M_XYZ_to_RGB = [[3.24062548, -1.53720797, -0.49862860],
+        #                      [-0.96893071, 1.87575606, 0.04151752],
+        #                      [0.05571012, -0.20402105, 1.05699594]]
 
-        self.M_RGB_to_XYZ = [[0.41240000, 0.35760000, 0.18050000],
-                             [0.21260000, 0.71520000, 0.07220000],
-                             [0.01930000, 0.11920000, 0.95050000]]
+        # self.M_RGB_to_XYZ = [[0.41240000, 0.35760000, 0.18050000],
+        #                      [0.21260000, 0.71520000, 0.07220000],
+        #                      [0.01930000, 0.11920000, 0.95050000]]
 
+        # these are 'Best RGB', D50 transforms from
+        # http://www.brucelindbloom.com/index.html?Eqn_RGB_XYZ_Matrix.html
+        self.space = "Best RGB"
+        self.M_RGB_to_XYZ = [[0.6326696, 0.2045558, 0.1269946],
+                             [0.2284569, 0.7373523, 0.0341908],
+                             [0.0000000, 0.0095142, 0.8156958]]
+                                
+
+        self.M_XYZ_to_RGB = [[1.7552599, -0.4836786, -0.2530000],
+                             [-0.5441336, 1.5068789, 0.0215528],
+                             [0.0063467, -0.0175761, 1.2256959]]
+                                
+        
         # xyY coordinates for 590nm orange LED
         # https://www.luxalight.eu/en/cie-convertor
         self.orange_xyY = [0.575151311, 0.424232235, 1.0]
@@ -25,15 +38,15 @@ class ColorXform(object):
         self.orange_XYZ = self.xyY_to_XYZ(self.orange_xyY)
         #print(f"orange_XYZ: {self.orange_XYZ}")
         
+        
     def matrix_mult(self, M, inp):
         # matrix multiply input triple by M
-        # obv easier to do a numpy matrix multiply but doing
-        # it long form here for clarity and library independance
+        # obv easier to do wityh a klibrary like numpy but doing
+        # it long form here for clarity and library independence
         a =  M[0][0] * inp[0] + M[0][1] * inp[1] + M[0][2] * inp[2] 
         b =  M[1][0] * inp[0] + M[1][1] * inp[1] + M[1][2] * inp[2] 
         c =  M[2][0] * inp[0] + M[2][1] * inp[1] + M[2][2] * inp[2] 
         return(a, b, c)
-
 
     
     def hsv_to_rgba(self, h, s, v):
@@ -84,6 +97,15 @@ class ColorXform(object):
         if i2 == 11:
             return [v, b, b, u2] # max r, a up steep
 
+    def XYZ_to_xyY(self, X, Y, Z):
+        # from http://www.brucelindbloom.com/index.html?Eqn_xyY_to_XYZ.html
+        if (X + Y + Z) == 0.0:
+            print("warning, XYZ out of range")
+            return(0.333, 0.333, 1)
+
+        x= X/(X+Y+Z)
+        y= Y/(X+Y+Z)
+        return(x, y, Y)
 
     def xyY_to_XYZ(self, xyY):
         # from http://www.brucelindbloom.com/index.html?Eqn_xyY_to_XYZ.html
@@ -96,12 +118,63 @@ class ColorXform(object):
             return(0., 0., 0.)
 
         return( x*Y/y, Y, (1 - x - y)*Y/y)
-        
 
-    def mix_XYZ(self, x1, y1, z1, x2, y2, z2):
-        '''mix two XYZ colors so result is normalized, see
-https://www.ledsmagazine.com/smart-lighting-iot/white-point-tuning/article/16695431/understand-color-science-to-maximize-success-with-leds-part-2-magazine'''
-        pass
+
+    def hue_angle(self, xy_vec):
+        import math
+        ''' calculate hue angle in degrees from CIE space vector'''
+        # numpy version
+        #angle = (360/(2*math.pi))*math.arctan2(xy_vec[0], xy_vec[1])
+        angle = (1/(2*math.pi))*math.atan2(xy_vec[0], xy_vec[1])
+        #sat = np.linalg.norm(xy_vec)
+        return((angle + 1.)%1.)
+
+    
+    def RGBA_to_XYZ(self, R, G, B, A):
+        red_XYZ= self.rgb_to_xyz(R,  0.,  0.)
+        grn_XYZ= self.rgb_to_xyz(0.,  G,  0.)
+        blu_XYZ= self.rgb_to_xyz(0., 0.,  B )
+
+        org590_xy = [0.575151311, 0.424232235]
+        org_XYZ = self.xyY_to_XYZ([org590_xy[0], org590_xy[1], A])
+
+
+        X = red_XYZ[0] + grn_XYZ[0] + blu_XYZ[0] + org_XYZ[0]
+        Y = red_XYZ[1] + grn_XYZ[1] + blu_XYZ[1] + org_XYZ[1]
+        Z = red_XYZ[2] + grn_XYZ[2] + blu_XYZ[2] + org_XYZ[2]
+
+        return(X, Y, Z)
+
+    def XYZ_to_hue(self, X, Y, Z):
+        import math
+        ''' convert color/luminance specification in CIE XYZ coordinates to hue angle
+            This version uses the colour_science library https://colour.readthedocs.io/'''
+        # these angles are in xy space
+
+
+        #D50 colorpoint from Best RGB colorspace
+        white_xy = [ 0.3457,  0.3585]
+
+        #red< 283.52 org< 254.014 grn< 162.59 blu< 33.67
+        #print(f"red< {red_angle} org< {org_angle} grn< {grn_angle} blu< {blu_angle}")
+
+        x, y, Y = self.XYZ_to_xyY(X, Y, Z)
+        tmp_vec = [white_xy[0] - x, white_xy[1] - y]
+        # calculate angle and offset so red is = zero = 360
+        red_zero_angle = 5/36.
+        return((2.0 - red_zero_angle - self.hue_angle(tmp_vec))%1.)
+
+    def RGBA_to_HSV(self, R, G, B, A):
+        maxc = max((R, G, B, A))
+        minc = min((R, G, B, A))
+
+        X, Y, Z = self.RGBA_to_XYZ(R,G,B,A)
+        hue = self.XYZ_to_hue(X, Y, Z)
+
+        # yes is is that simple
+        val = maxc
+        sat = 1. - minc
+        return(hue, sat, val)
 
     def rgba_to_hsv(self, r, g, b, a):
         """ convert red, green, blue, amber color components to
@@ -112,8 +185,33 @@ https://www.ledsmagazine.com/smart-lighting-iot/white-point-tuning/article/16695
         all inputs/outputs are floats between 0 and 1"""
         
         pass
+
+    
+    def rgb_to_xyz(self, r, g, b, gamma=True):
+        gval = 2.2
+        if gamma:
+            r = r**gval
+            g = g**gval
+            b = b**gval
+#        print(r, g, b)
+        X, Y, Z = self.matrix_mult(self.M_XYZ_to_RGB,
+                                  [r, g, b])
+        return(X, Y, Z)
         
-    def rgba_to_rgb(self, r, g, b, a):
+    def xyz_to_rgb(self, x, y, z, gamma=True):
+        gval = 1/2.2
+        R, G, B = self.matrix_mult(self.M_RGB_to_XYZ,[x, y, z])
+
+        if gamma:
+            R = R**gval
+            G = G**gval
+            B = B**gval
+
+        return(R, G, B)
+
+
+    
+    def rgba_to_rgbOLD(self, r, g, b, a):
         """ convert red, green, blue, amber color components to
         hue, saturation, value triple.
         This works by first converting to XYZ colorspace, interpolating
@@ -210,6 +308,8 @@ https://www.ledsmagazine.com/smart-lighting-iot/white-point-tuning/article/16695
         return (hue, sat, val)
 
 
+
+    
     def print_hsv(self, hue, sat, val, extra=""):
         print(f" hsv: {hue:.3f} {sat:.3f} {val:.3f} {extra}")            
 
