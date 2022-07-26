@@ -204,8 +204,8 @@ class ColorXform(object):
         """
 
         # h = h - 25/360.
-        # if h < 0:
-        #     h += 1.0
+        if h < 0:
+            h += 1.0
 
         # prewarp hue input so it's more linear with RGBA_to_hue() inverse
         if warp:
@@ -215,7 +215,7 @@ class ColorXform(object):
 
 
         # wrap around
-        h = h%1.0
+        #h = h%1.0
 
         # hand-tweaked for linearity
         RH = 0.
@@ -239,11 +239,9 @@ class ColorXform(object):
         if s == 0.0:
             return [v, v, v, v]
 
-        # i = int(h*6.0) # what hue range are we in?
-
-        #                         # v is top flat
-        # b = v*(1.0 - s)         # bottom flat
-
+        # v is top max value
+        # b is bottom min value
+        b = v*(1.0 - s) 
 
         if h < RAH : # hue below red-amber boundary
             #print(f"{h}: octant 0")
@@ -311,7 +309,7 @@ class ColorXform(object):
         csum = (R + G + B + A)
 
         if csum < 0.001:
-            return(cx.white_xy)
+            return(self.white_xy)
 
         x = (R*red[0] + G*grn[0] + B*blu[0] + A*org[0])/csum
         y = (R*red[1] + G*grn[1] + B*blu[1] + A*org[1])/csum
@@ -368,19 +366,18 @@ class ColorXform(object):
         # coeffs determined by polynomal fit to inverse
         # hue_to_RGBA() -> RGBA_to_hue_CIE hue difference
         # see github linearized_RGBA_to_hue.ipynb for coeff calc
-        coeff_w = [0.00577841,  0.68687651, -2.50694912, 17.56006685
-                   -37.34857261, 34.06893111 -11.45908063]
-        
+        coeff_w =  [0.00577841,  0.68687651, -2.50694912, 17.56006685, -37.34857261, 34.06893111, -11.45908063]
         # default to local warping coefficients if none specified
         if coeff is None:
             coeff = coeff_w
 
+
         # limit to 0-1 range so we don't blow sky high
         #x = x%1.0    
-        xn = 1
+        xn = 1.
         res = 0.
         for c in coeff:
-            res += c * xn
+            res += (float(c) * xn)
             xn = xn *x
         return(res)
     
@@ -394,13 +391,10 @@ class ColorXform(object):
 
         white_xy = self.LED_white_xy
 
-
-
         tmp_vec = [white_xy[0] - xy_vec[0], white_xy[1] - xy_vec[1]]
         # calculate angle and offset so red is = zero = 360
         if red_offset is None:
-            # horrible hack constant but it works
-            #red_offset = 5/36
+            # offset so red = 0.0
             red_offset = self.r_abs_angle
         return((2.0 - red_offset - self.hue_angle(tmp_vec))%1.)
 
