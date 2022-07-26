@@ -66,6 +66,9 @@ class ColorXform(object):
         self.sRGB1_xy = [0.4557, 0.4211]
         self.EE_xy =    [0.3333, 0.33333]
 
+        # xy value of equal-energy LED mixture (cound by experiment)
+        self.LED_white_xy = [0.386846372,  0.40224135]
+
         # only white we currently use
         self.white_xy  = self.D65_xy
         self.white_XYZ = self.xyY_to_XYZ(self.white_xy[0], self.white_xy[1])
@@ -189,55 +192,43 @@ class ColorXform(object):
         if i2 == 11:
             return [v, b, b, u2] # max r, a up steep
 
-    def HSV_to_RGBA_CIE(self, h, s, v):
+    def HSV_to_RGBA_CIE(self, h, s, v, warp=True):
         """implementation of HSV colorspace to red, green, blue and
-        amber channels red and amber squashed into 1/3 the hue range
-        (instead of 1/2 as in naive) HSV inputs and rgby outputs all
-        floats between 0 and 1
-        this code is described as in http://rotormind.com/blog/2015/Generating-RGBA-from-Hue/
+        amber channels, based on (rough!) angles in CIE space.
+        # hue breakpoints are tweaked to be (roughly!) linear with
+        warped input
+        HSV inputs and rgby outputs all floats between 0 and 1;
+        not checked or clipped.
+        this code is described as in 
+        http://rotormind.com/blog/2015/Generating-RGBA-from-Hue/
         """
 
         # h = h - 25/360.
         # if h < 0:
         #     h += 1.0
+
+        # prewarp hue input so it's more linear with RGBA_to_hue() inverse
+        if warp:
+            h = self.prewarp(h)
             
-        fudge = 25/360.
+        fudge = 0.0
 
 
         # wrap around
         h = h%1.0
 
-        if False:
+        # hand-tweaked for linearity
+        RH = 0.
+        AH = 20./360.
+        GH = 120./360.
+        BH = 240./360.
 
-            # hue angles
-            #RH = self.r_angle + 10/360
-            RH = 0.
-            AH = self.a_angle + fudge
-            GH = self.g_angle + fudge
-
-            #BH = self.b_angle - 20/360
-            BH = self.b_angle + fudge
-
-            # halfway points between above hue angles
-            RAH = self.RAH + fudge
-            AGH = self.AGH + fudge
-            GBH = self.GBH + fudge
-            BRH = self.BRH + fudge
-
-
-            # tweaks to match hue
-        else:
-            RH = 0.
-            AH = self.a_angle + fudge
-            GH = self.g_angle + fudge
-            BH = 0.70 + fudge
-
-            # halfway points between above hue angles
-            RAH = self.RAH + fudge
-            #AGH = self.AGH
-            AGH = 0.20 + fudge
-            GBH = 0.53 + fudge
-            BRH = self.BRH + fudge
+        # halfway points between above hue angles
+        RAH = AH/2
+        #AGH = 90./360.
+        AGH = 100./360.
+        GBH = 180./360
+        BRH = 300./360.
 
         
         # print(360*(RAH - RAH1))
@@ -245,59 +236,48 @@ class ColorXform(object):
         # print(360*(GBH - GBH1))
         # print(360*(BRH - BRH1))
 
-        
-
         if s == 0.0:
             return [v, v, v, v]
 
-        i = int(h*6.0) # what hue range are we in?
+        # i = int(h*6.0) # what hue range are we in?
 
-                                # v is top flat
-        b = v*(1.0 - s)         # bottom flat
+        #                         # v is top flat
+        # b = v*(1.0 - s)         # bottom flat
 
 
         if h < RAH : # hue below red-amber boundary
-            #print("octant 0")
+            #print(f"{h}: octant 0")
             h_frac = h/RAH 
             return [v, b, b, v*(1.0 - s*(1-h_frac))]  # max r, a up 
         elif h < AH : # hue below amber boundary
-            #print("octant 1")
+            #print(f"{h}: octant 1")
             h_frac = (h - RAH)/(AH - RAH)
             return [v*(1.0 - s*h_frac), b, b, v]  # max a, r down 
         elif h < AGH : # hue below amber-green boundary
-            #print("octant 2")
+            #print(f"{h}: octant 2")
             h_frac = (h - AH)/(AGH - AH)
             return [b, v*(1.0 - s*(1-h_frac)), b, v]  # max a, g up 
         elif h < GH  : # hue below green boundary
-            #print("octant 3")
+            #print(f"{h}: octant 3")
             h_frac = (h - AGH)/(GH - AGH)
             return [b, v, b, v*(1.0 - s*h_frac)]   # max g, a down 
         elif h < GBH  : # hue below green-blue boundary
-            #print("octant 4")
+            #print(f"{h}: octant 4")
             h_frac = (h - GH)/(GBH - GH)
             return [b, v, v*(1.0 - s*(1-h_frac)), b]   # max g, b up 
         elif h < BH : # hue below blue boundary
-            #print("octant 5")
+            #print(f"{h}: octant 5")
             h_frac = (h - GBH)/(BH - GBH)
             return [b, v*(1.0 - s*h_frac), v, b]   # max b, g down 
         elif h < BRH : # hue below blue -red boundary
-            #print("octant 6")
+            #print(f"{h}: octant 6")
             h_frac = (h - BH)/(BRH - BH)
             return [v*(1.0 - s*(1-h_frac)), b, v, b]   # max b, r up 
         else : # # hue below red boundary (1.0 = 0.0)
-            #print("octant 7")
+            #print(f"{h}: octant 7")
             h_frac = (h - BRH)/(1.0 + RH - BRH)
             return [v, b, v*(1.0 - s*h_frac), b]  # max r, b down 
-            
-    def XYZ_to_xyY(self, X, Y, Z):
-        # from http://www.brucelindbloom.com/index.html?Eqn_xyY_to_XYZ.html
-        if (X + Y + Z) == 0.0:
-            print("warning, XYZ out of range")
-            return(0.333, 0.333, 1)
 
-        x= X/(X+Y+Z)
-        y= Y/(X+Y+Z)
-        return(x, y, Y)
 
     def xyY_to_XYZ(self, x, y, Y=1.0):
         # from http://www.brucelindbloom.com/index.html?Eqn_xyY_to_XYZ.html
@@ -336,43 +316,42 @@ class ColorXform(object):
         x = (R*red[0] + G*grn[0] + B*blu[0] + A*org[0])/csum
         y = (R*red[1] + G*grn[1] + B*blu[1] + A*org[1])/csum
 
-        print([x, y])
         return([x, y])
 
         
-    def RGBA_to_xy(self, R, G, B, A):
-        X, Y, Z = self.RGBA_to_XYZ(R, G, B, A)
-        x, y, Y = self.XYZ_to_xyY(X, Y, Z)
-        return([x, y])
+    # def RGBA_to_xy(self, R, G, B, A):
+    #     X, Y, Z = self.RGBA_to_XYZ(R, G, B, A)
+    #     x, y, Y = self.XYZ_to_xyY(X, Y, Z)
+    #     return([x, y])
 
-    def RGBA_to_XYZ(self, R, G, B, A):
-        red_XYZ= self.RGB_to_XYZ(R,  0.,  0.)
-        grn_XYZ= self.RGB_to_XYZ(0., G,   0.)
-        blu_XYZ= self.RGB_to_XYZ(0., 0.,  B )
+    # def RGBA_to_XYZ(self, R, G, B, A):
+    #     red_XYZ= self.RGB_to_XYZ(R,  0.,  0.)
+    #     grn_XYZ= self.RGB_to_XYZ(0., G,   0.)
+    #     blu_XYZ= self.RGB_to_XYZ(0., 0.,  B )
 
-        #org590_xy = [0.575151311, 0.424232235]
-        org_XYZ = self.xyY_to_XYZ(self.org590_xy[0], self.org590_xy[1], A)
-
-
-        X = red_XYZ[0] + grn_XYZ[0] + blu_XYZ[0] + org_XYZ[0]
-        Y = red_XYZ[1] + grn_XYZ[1] + blu_XYZ[1] + org_XYZ[1]
-        Z = red_XYZ[2] + grn_XYZ[2] + blu_XYZ[2] + org_XYZ[2]
-
-        #return(X, Y, Z)
-        return(X/Y, 1, Z/Y)
-
-    def RGBA_to_XYZ2(self, R, G, B, A):
-        rgb_XYZ= self.RGB_to_XYZ(R,  G,  B)
-
-        #org590_xy = [0.575151311, 0.424232235]
-        org_XYZ = self.xyY_to_XYZ(self.org590_xy[0], self.org590_xy[1], A)
+    #     #org590_xy = [0.575151311, 0.424232235]
+    #     org_XYZ = self.xyY_to_XYZ(self.org590_xy[0], self.org590_xy[1], A)
 
 
-        X = rgb_XYZ[0] + org_XYZ[0]
-        Y = rgb_XYZ[1] + org_XYZ[1]
-        Z = rgb_XYZ[2] + org_XYZ[2]
+    #     X = red_XYZ[0] + grn_XYZ[0] + blu_XYZ[0] + org_XYZ[0]
+    #     Y = red_XYZ[1] + grn_XYZ[1] + blu_XYZ[1] + org_XYZ[1]
+    #     Z = red_XYZ[2] + grn_XYZ[2] + blu_XYZ[2] + org_XYZ[2]
 
-        return(X, Y, Z)
+    #     #return(X, Y, Z)
+    #     return(X/Y, 1, Z/Y)
+
+    # def RGBA_to_XYZ2(self, R, G, B, A):
+    #     rgb_XYZ= self.RGB_to_XYZ(R,  G,  B)
+
+    #     #org590_xy = [0.575151311, 0.424232235]
+    #     org_XYZ = self.xyY_to_XYZ(self.org590_xy[0], self.org590_xy[1], A)
+
+
+    #     X = rgb_XYZ[0] + org_XYZ[0]
+    #     Y = rgb_XYZ[1] + org_XYZ[1]
+    #     Z = rgb_XYZ[2] + org_XYZ[2]
+
+    #     return(X, Y, Z)
 
                                
     def XYZ_to_hue(self, X, Y, Z, red_offset=None):
@@ -381,20 +360,48 @@ class ColorXform(object):
         x, y, Y = self.XYZ_to_xyY(X, Y, Z)
         return(self.xy_to_hue([x, y], red_offset))
 
+
+    def prewarp(self, x, coeff=None):
+        # this is a horrible hack to prewarp the hue scale.
+        # using a polynomial fit
+        # only valid for if x is inside 0-1
+        # coeffs determined by polynomal fit to inverse
+        # hue_to_RGBA() -> RGBA_to_hue_CIE hue difference
+        # see github linearized_RGBA_to_hue.ipynb for coeff calc
+        coeff_w = [0.00577841,  0.68687651, -2.50694912, 17.56006685
+                   -37.34857261, 34.06893111 -11.45908063]
+        
+        # default to local warping coefficients if none specified
+        if coeff is None:
+            coeff = coeff_w
+
+        # limit to 0-1 range so we don't blow sky high
+        #x = x%1.0    
+        xn = 1
+        res = 0.
+        for c in coeff:
+            res += c * xn
+            xn = xn *x
+        return(res)
+    
+
+        
     def xy_to_hue(self, xy_vec, red_offset=None):
         import math
         
         #D50 colorpoint from Best RGB colorspace
-        white_xy = self.D65_xy
+        #white_xy = self.D65_xy
 
-        #red< 283.52 org< 254.014 grn< 162.59 blu< 33.67
-        #print(f"red< {red_angle} org< {org_angle} grn< {grn_angle} blu< {blu_angle}")
+        white_xy = self.LED_white_xy
+
+
 
         tmp_vec = [white_xy[0] - xy_vec[0], white_xy[1] - xy_vec[1]]
         # calculate angle and offset so red is = zero = 360
         if red_offset is None:
             # horrible hack constant but it works
-            red_offset = 5/36
+            #red_offset = 5/36
+            red_offset = self.r_abs_angle
         return((2.0 - red_offset - self.hue_angle(tmp_vec))%1.)
 
     def RGBA_to_HSV_CIE(self, R, G, B, A):
@@ -404,7 +411,7 @@ class ColorXform(object):
 
         # X, Y, Z = self.RGBA_to_XYZ(R,G,B,A)
         # hue = self.XYZ_to_hue(X, Y, Z)
-        xy = self.RGBA_to_xy(R,G,B,A)
+        xy = self.RGBA_to_xy_geom(R,G,B,A)
         hue = self.xy_to_hue(xy)
 
         # yes is is that simple, but yes it is perceptually wrong
