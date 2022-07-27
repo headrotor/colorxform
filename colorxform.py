@@ -292,7 +292,10 @@ class ColorXform(object):
         # coeffs determined by polynomal fit to inverse
         # hue_to_RGBA() -> RGBA_to_hue_CIE hue difference
         # see github linearized_RGBA_to_hue.ipynb for coeff calc
-        coeff_w =  [0.00577841,  0.68687651, -2.50694912, 17.56006685, -37.34857261, 34.06893111, -11.45908063]
+        # set coefficient 0 to 0.0 for no offset
+
+        coeff_w =  [0.0,  0.68687651, -2.50694912, 17.56006685, -37.34857261, 34.06893111, -11.45908063]
+
         # default to local warping coefficients if none specified
         if coeff is None:
             coeff = coeff_w
@@ -308,8 +311,8 @@ class ColorXform(object):
         for c in coeff:
             res += (float(c) * xn)
             xn = xn *x
-        # return warped value, wrapped if > 1.0
-        return(res%1.0)
+        return(res)
+
 
 
     #########################################################################
@@ -354,7 +357,6 @@ class ColorXform(object):
         X, Y, Z = self.matrix_mult(self.M_XYZ_to_RGB,
                                    [r, g, b])
         return(X, Y, Z)
-
 
     
     def clip(self, x, clipval=1.0):
