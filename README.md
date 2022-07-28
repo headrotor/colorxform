@@ -33,7 +33,8 @@ LED](https://github.com/headrotor/colorxform/blob/main/amber-trajectory.png?raw=
 
 ## Contents of this repository:
 
-Note on variable names[^1]
+Note on variable names<sup>[1](#note1)</sup>
+
 
 `colorxform.py` --- code to convert between RGB, RGBA (red, green
 blue, & amber), HSV, CIE XYZ and CIE xyY colorspaces with no library
@@ -51,10 +52,10 @@ There are three principal functions in this class:
     amber value, for example as PWM brightnesses for each LED of the
     respective colors, into hue, value (brightness) and saturation
     values. This calls three additional functions:
- * `RGBA_to_xy(self, R, G, B, A)` -- Converts RGBA values to CIE _xy_
+  1. `RGBA_to_xy(self, R, G, B, A)` -- Converts RGBA values to CIE _xy_
    values.
- * `xy_to_hue(self, xy_vec, red_offset=None)`-- Converts a CIE _xy_ value to a hue angle by finding the angle from pure red in _xy_ space.
- * `prewarp(self, x, coeff=None)` -- A hue warping function to help
+  2. `xy_to_hue(self, xy_vec, red_offset=None)`-- Converts a CIE _xy_ value to a hue angle by finding the angle from pure red in _xy_ space.
+  3. `prewarp(self, x, coeff=None)` -- A hue warping function to help
    correct nonlinearity in the `RGBA_to_HSV()` function so that the
    round trip `RGBA_to_HSV(HSV_to_RGB())` conversion results in closer
    to identical hue values. This is called automatically when the
@@ -72,12 +73,12 @@ space. This uses the `color_science` python library
 
 `linearized_RGBA_to_hue.ipynb` --- 
 
-[^1][Color-space variable names are confusing!  Colorspace names are in
-uppercase except `xyY` to disambiguate `X`, `Y` from `x`, `y` from CIE
-`xyY` space. Four-color space is `RGBA` with `A` for Amber.  (Though
-`Y` is often used for for amber/Yellow to disambiguate from alpha
-channel "A", we use `A` here to disambiguate from `Y` in `xyY` and
-`XYZ` color spaces.)]
+<a name="note1">1</a>: Color-space variable names are confusing!
+Colorspace names are in uppercase except `xyY` to disambiguate `X`,
+`Y` from `x`, `y` from CIE `xyY` space. Four-color space is `RGBA`
+with `A` for Amber.  (Though `Y` is often used for for amber/Yellow to
+disambiguate from alpha channel "A", we use `A` here to disambiguate
+from `Y` in `xyY` and `XYZ` color spaces.)
 
 
 
