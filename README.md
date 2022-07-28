@@ -31,7 +31,7 @@ LED](https://github.com/headrotor/colorxform/blob/main/amber-trajectory.png?raw=
 
 ## Contents of this repository:
 
-Note on variable names<sup>[1](#note1)</sup>
+Note on variable names<sup>[Note 1](#note1)</sup>
 
 `colorxform.py` --- Python class with methods to convert between RGB, RGBA (red, green blue, & amber), HSV, CIE XYZ and CIE xyY colorspaces with no library
 dependencies.  For more information on the CIE colorspaces, see Wikipedia: 
@@ -52,8 +52,8 @@ There are three principal methods in this class:
    values.
   2. `xy_to_hue(self, xy_vec, red_offset=None)`-- Converts a CIE _xy_ value to a hue angle by finding the angle from pure red in _xy_ space.
   3. `prewarp(self, x, coeff=None)` -- A hue warping function to help
-   correct nonlinearity in the `RGBA_to_HSV()` function so that the
-   round trip `RGBA_to_HSV(HSV_to_RGB())` conversion results in closer
+   correct nonlinearity in the `RGBA_to_HSV_CIE()` function so that the
+   round trip `RGBA_to_HSV_CIE(HSV_to_RGB())` conversion results in closer
    to identical hue values. This is called automatically when the
    default `warp=True` parameter is used in `HSV_to_RGBA_CIE()`; there
    is little reason not to use it.
@@ -65,7 +65,7 @@ space. This uses the `color_science` python library
 
 `linearized_RGBA_to_hue.ipynb` --- A Juypyter notebook to explore and test the colorxform methods. In particular this calculates the regression coefficients for the hue warping function used in `prewarp()`.
 
-<a name="note1">Note</a>: color-space nomenclature is confusing!
+<a name="note1">Note 1</a>: color-space nomenclature is confusing!
 Colorspace names are in uppercase except `xyY` to disambiguate `X`,
 `Y` from `x`, `y` from CIE `xyY` space. Four-color space is `RGBA`
 with `A` for Amber.  (Though `Y` is often used for for amber/Yellow to
