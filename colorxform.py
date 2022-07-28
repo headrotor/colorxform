@@ -456,11 +456,10 @@ if __name__ == '__main__':
         sat = 0.7
         val = 1.0
         print(f" HSV: {hue:.3f} {sat:.3f} {val:.3f}")        
-        r, g, b, a = cx.HSV_to_RGBA(hue, sat, val)
+        R, G, B, A = cx.HSV_to_RGBA_CIE(hue, sat, val)
         #print(f"RGBA: {r:.3f} {g:.3f} {b:.3f} {a:.3f}")        
-        R, G, B = cx.RGBA_to_rgb(r,g,b,a)
         #print(f"RGB: {R:.3f} {G:.3f} {B:.3f}")
-        H, S, V = cx.rgb_to_HSV(R, G, B)
+        H, S, V = cx.RGBA_to_HSV_CIE(R, G, B, A)
         print(f" HSV: {H:.3f} {S:.3f} {V:.3f}")
         huediff = abs(hue-H)
         if huediff > 0.5:
@@ -470,8 +469,8 @@ if __name__ == '__main__':
             maxhdiff = huediff
         print(f"hue diff: {huediff}")
 
-        print("===============")
-        print(f"max hue diff: {maxhdiff}")
+    print("===============")
+    print("max hue diff: {:4.2f}%".format(100*maxhdiff))
 
         
         
