@@ -455,12 +455,11 @@ if __name__ == '__main__':
         hue = float(hue_degrees)/360.
         sat = 0.7
         val = 1.0
-        print(f" HSV: {hue:.3f} {sat:.3f} {val:.3f}")        
+        print(f"    raw HSV: {hue:.3f} {sat:.3f} {val:.3f}")        
         R, G, B, A = cx.HSV_to_RGBA_CIE(hue, sat, val)
         #print(f"RGBA: {r:.3f} {g:.3f} {b:.3f} {a:.3f}")        
-        #print(f"RGB: {R:.3f} {G:.3f} {B:.3f}")
         H, S, V = cx.RGBA_to_HSV_CIE(R, G, B, A)
-        print(f" HSV: {H:.3f} {S:.3f} {V:.3f}")
+        print(f" cooked HSV: {H:.3f} {S:.3f} {V:.3f}")
         huediff = abs(hue-H)
         if huediff > 0.5:
             huediff = abs(1-huediff)
