@@ -13,10 +13,10 @@ range into four sections corresponding to red, amber, green, and blue,
 and crossfades between them to arrive at an approximately correct
 hue. 
 
-The `RGBA_to_HSV()` function is somewhat more complex and is naturally
+The `RGBA_to_HSV_CIE()` function is somewhat more complex and is naturally
 an approximation as we are converting from a four-dimensional space to
 three. The approach is to convert each light source (R, G, B, and A)
-into the [CIE xyY](https://en.wikipedia.org/wiki/CIE_1931_color_space#Definition_of_the_CIE_XYZ_color_space)
+into the [CIE xy](https://en.wikipedia.org/wiki/CIE_1931_color_space#Definition_of_the_CIE_XYZ_color_space)
 space, where they can be interpolated to find the color of the
 resulting mixture. Once this is calculated (by a simple linear mix),
 the `xy` coordinates can be converted to HSV.
@@ -25,9 +25,28 @@ In this example, the dotted line shows the colors available by mixing
 the amber LED with white (from an equal mix of RGB).  The X is the
 point at R =  G = B = A = 0.5.
 
-
 ![CIE colorspace plot showing gamut of RGB LEDS plus amber
 LED](https://github.com/headrotor/colorxform/blob/main/amber-trajectory.png?raw=true)
+
+
+There are two versions of the HSV to RGBA conversion, the first
+`HSV_to_RGBA()` is described here. The second approach
+`HSV_to_RGBA_CIE()` gives colors that are closer to equal angles in
+`xy` space and should thus be a perceptually smoother transition
+around the hue circle. The following image shows the locus in `xy` space of 
+hues equally spaced in 10 degree increments given by `HSV_to_RGBA()`  on the left and `HSV_to_RGBA_CIE()` on the right.
+
+![Equal hue values in naive HSV_to_RGB and perceptually](https://github.com/headrotor/colorxform/blob/main/images/CIE-gamuts.png?raw=true)
+
+
+
+A benefit of the latter is that a round-trip
+conversion `HSV` → `RGBA`→ `HSV` will result in hues that are much
+closer to the original. The `HSV_to_RGBA_CIE()` method has an optional
+parameter `warp` that when set to true (the default) will prewarp the
+hue to better match the `RGBA_to_HSV_CIE()` results, it can be set to
+False if this is of less importance.
+
 
 ## Contents of this repository:
 
