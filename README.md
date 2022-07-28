@@ -65,7 +65,7 @@ space. This uses the `color_science` python library
 
 `linearized_RGBA_to_hue.ipynb` --- A Juypyter notebook to explore and test the colorxform methods. In particular this calculates the regression coefficients for the hue warping function used in `prewarp()`.
 
-<a name="note1">1</a>: Color-space variable names are confusing!
+<a name="note1">Note</a>: color-space nomenclature is confusing!
 Colorspace names are in uppercase except `xyY` to disambiguate `X`,
 `Y` from `x`, `y` from CIE `xyY` space. Four-color space is `RGBA`
 with `A` for Amber.  (Though `Y` is often used for for amber/Yellow to
