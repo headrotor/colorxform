@@ -40,7 +40,7 @@ blue, & amber), HSV, CIE XYZ and CIE xyY colorspaces with no library
 dependencies. For more information on the CIE colorspaces, see Wikipedia: 
 [https://en.wikipedia.org/wiki/CIE_1931_color_space}
 
-There are three prinicpal functions in this class:
+There are three principal functions in this class:
 
 * `HSV_to_RGBA(self, h, s, v)` -- This is the orginal HSV-to-RGBA
   conversion routine described here:
@@ -48,7 +48,7 @@ There are three prinicpal functions in this class:
 * `HSV_to_RGBA_CIE(self, h, s, v, warp=True)` This is an improved version with better perceptual linearity in the CIE space.
   * `RGBA_to_HSV_CIE(self, R, G, B, A)` This is the inversed function
     that converts a color specified in linear red, green, blue and
-    amber value, for example as PWM brightnesses of LEDs of the
+    amber value, for example as PWM brightnesses for each LED of the
     respective colors, into hue, value (brightness) and saturation
     values. This calls three additional functions:
  + `RGBA_to_xy(self, R, G, B, A)` -- Converts RGBA values to CIE _xy_
