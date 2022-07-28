@@ -29,19 +29,15 @@ point at R =  G = B = A = 0.5.
 ![CIE colorspace plot showing gamut of RGB LEDS plus amber
 LED](https://github.com/headrotor/colorxform/blob/main/amber-trajectory.png?raw=true)
 
-
-
 ## Contents of this repository:
 
 Note on variable names<sup>[1](#note1)</sup>
 
-
-`colorxform.py` --- code to convert between RGB, RGBA (red, green
-blue, & amber), HSV, CIE XYZ and CIE xyY colorspaces with no library
-dependencies. For more information on the CIE colorspaces, see Wikipedia: 
+`colorxform.py` --- Python class with methods to convert between RGB, RGBA (red, green blue, & amber), HSV, CIE XYZ and CIE xyY colorspaces with no library
+dependencies.  For more information on the CIE colorspaces, see Wikipedia: 
 [https://en.wikipedia.org/wiki/CIE_1931_color_space}
 
-There are three principal functions in this class:
+There are three principal methods in this class:
 
 * `HSV_to_RGBA(self, h, s, v)` -- This is the orginal HSV-to-RGBA
   conversion routine described here:
@@ -67,11 +63,7 @@ There are three principal functions in this class:
 space. This uses the `color_science` python library
 <https://www.colour-science.org/> and generates the plot above
 
-`plot_trajectories.py` --- code to plot LED colors and gamut in CIE
-space. This uses the `color_science` python library
-<https://www.colour-science.org/> and generates the plot above
-
-`linearized_RGBA_to_hue.ipynb` --- 
+`linearized_RGBA_to_hue.ipynb` --- A Juypyter notebook to explore and test the colorxform methods. In particular this calculates the regression coefficients for the hue warping function used in `prewarp()`.
 
 <a name="note1">1</a>: Color-space variable names are confusing!
 Colorspace names are in uppercase except `xyY` to disambiguate `X`,
