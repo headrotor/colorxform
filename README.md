@@ -1,5 +1,5 @@
 # colorxform
-###Color math for converting between color spaces for RGB + Amber LEDs
+### Color math for converting between color spaces for RGB + Amber LEDs
 
 This code was written in an attempt to control the colors of LED light
 fixtures that use more than standard RGB colors. Though right now only
@@ -7,12 +7,6 @@ an additional amber is supported, these methods could be easily
 extended to LEDs or other sources of any color. This is a standalone
 module and does not depend on any libraries, and is written to be
 easily translated into other languages (hence unPythonic constructs).
-[_A note on variable names_][Color-space variable names are confusing!
-Colorspace names are in uppercase except `xyY` to disambiguate `X`,
-`Y` from `x`, `y` from CIE `xyY` space. Four-color space is `RGBA`
-with `A` for Amber.  (Though `Y` is often used for for amber/Yellow to
-disambiguate from alpha channel "A", we use `A` here to disambiguate
-from `Y` in `xyY` and `XYZ` color spaces.)]
 
 The `HSV_to_RGBA()` and `HSV_to_RGBA_CIE()` functions divides the hue
 range into four sections corresponding to red, amber, green, and blue,
@@ -29,7 +23,7 @@ the `xy` coordinates can be converted to HSV.
 
 In this example, the dotted line shows the colors available by mixing
 the amber LED with white (from an equal mix of RGB).  The X is the
-point at R = G = B = A = 0.5.
+point at R =  G = B = A = 0.5.
 
 
 ![CIE colorspace plot showing gamut of RGB LEDS plus amber
@@ -37,7 +31,9 @@ LED](https://github.com/headrotor/colorxform/blob/main/amber-trajectory.png?raw=
 
 
 
-##Contents of this repository:
+## Contents of this repository:
+
+Note on variable names[^1]
 
 `colorxform.py` --- code to convert between RGB, RGBA (red, green
 blue, & amber), HSV, CIE XYZ and CIE xyY colorspaces with no library
@@ -68,9 +64,20 @@ There are three prinicpal functions in this class:
 
 `plot_trajectories.py` --- code to plot LED colors and gamut in CIE
 space. This uses the `color_science` python library
-<https://www.colour-science.org/> and generates the plot below.
+<https://www.colour-science.org/> and generates the plot above
 
+`plot_trajectories.py` --- code to plot LED colors and gamut in CIE
+space. This uses the `color_science` python library
+<https://www.colour-science.org/> and generates the plot above
 
+`linearized_RGBA_to_hue.ipynb` --- 
+
+[^][Color-space variable names are confusing!  Colorspace names are in
+uppercase except `xyY` to disambiguate `X`, `Y` from `x`, `y` from CIE
+`xyY` space. Four-color space is `RGBA` with `A` for Amber.  (Though
+`Y` is often used for for amber/Yellow to disambiguate from alpha
+channel "A", we use `A` here to disambiguate from `Y` in `xyY` and
+`XYZ` color spaces.)]
 
 
 
