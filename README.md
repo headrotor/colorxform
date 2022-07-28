@@ -1,5 +1,5 @@
 # colorxform
-Color math for converting between color spaces for RGB + Amber LEDs
+###Color math for converting between color spaces for RGB + Amber LEDs
 
 This code was written in an attempt to control the colors of LED light
 fixtures that use more than standard RGB colors. Though right now only
@@ -14,6 +14,30 @@ with `A` for Amber.  (Though `Y` is often used for for amber/Yellow to
 disambiguate from alpha channel "A", we use `A` here to disambiguate
 from `Y` in `xyY` and `XYZ` color spaces.)]
 
+The `HSV_to_RGBA()` and `HSV_to_RGBA_CIE()` functions divides the hue
+range into four sections corresponding to red, amber, green, and blue,
+and crossfades between them to arrive at an approximately correct
+hue. 
+
+The `RGBA_to_HSV()` function is somewhat more complex and is naturally
+an approximation as we are converting from a four-dimensional space to
+three. The approach is to convert each light source (R, G, B, and A)
+into the [CIE xyY](https://en.wikipedia.org/wiki/CIE_1931_color_space#Definition_of_the_CIE_XYZ_color_space)
+space, where they can be interpolated to find the color of the
+resulting mixture. Once this is calculated (by a simple linear mix),
+the `xy` coordinates can be converted to HSV.
+
+In this example, the dotted line shows the colors available by mixing
+the amber LED with white (from an equal mix of RGB).  The X is the
+point at R = G = B = A = 0.5.
+
+
+![CIE colorspace plot showing gamut of RGB LEDS plus amber
+LED](https://github.com/headrotor/colorxform/blob/main/amber-trajectory.png?raw=true)
+
+
+
+##Contents of this repository:
 
 `colorxform.py` --- code to convert between RGB, RGBA (red, green
 blue, & amber), HSV, CIE XYZ and CIE xyY colorspaces with no library
@@ -48,34 +72,5 @@ space. This uses the `color_science` python library
 
 
 
-This code was written in an attempt to control the colors of LED light
-fixtures that use more than standard RGB colors. Though right now only
-an additional amber is supported, these methods could be easily
-extended to LEDs or other sources of any color. This is a standalone
-module and does not depend on any libraries, and is written to be
-easily translated into other languages (hence unPythonic constructs).
 
-The `HSV_to_RGBA()` function divides the hue range into four sections
-corresponding to red, amber, green, and blue, and crossfades between
-them to arrive at an approximately correct hue. More details can be
-found at this blog post:
-
-
-The `RGBA_to_HSV()` function is somewhat more complex and is naturally
-an approximation as we are converting from a four-dimensional space to
-three. The approach is to convert each light source (R, G, B, and A)
-into the [CIE
-XYZ](https://en.wikipedia.org/wiki/CIE_1931_color_space#Definition_of_the_CIE_XYZ_color_space)
-space, where they can be interpolated to find the color of the
-resulting mixture. Once this is calculated (by a simple linear mix),
-the XYZ coordinates can be converted back to sRGB (albeit with a loss
-of gamut) and then to HSV.
-
-In this example, the dotted line shows the colors available by mixing
-the amber LED with white (from an equal mix of RGB).  The X is the
-point at R = G = B = A = 0.5.
-
-
-![CIE colorspace plot showing gamut of RGB LEDS plus amber
-LED](https://github.com/headrotor/colorxform/blob/main/amber-trajectory.png?raw=true)
 
