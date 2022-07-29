@@ -1,7 +1,7 @@
 # colorxform
 ### Color math for converting between color spaces for RGB + Amber LEDs
 
-This code was written in an attempt to control the colors of LED light
+This code was written to control the colors of LED light
 fixtures that use more than standard RGB colors. Though right now only
 an additional amber is supported, these methods could be easily
 extended to LEDs or other sources of any color. This is a standalone
@@ -38,14 +38,18 @@ hues equally spaced in 10 degree increments given by `HSV_to_RGBA()`  on the lef
 
 ![Equal hue values in naive HSV_to_RGB and perceptually](https://github.com/headrotor/colorxform/blob/main/images/CIE-gamuts.png?raw=true)
 
+<!-- How to change images based on mode  -->
+<!-- ![Fancy logo](./dark.png#gh-dark-mode-only) -->
+<!-- ![Fancy logo](./light.png#gh-light-mode-only) -->
 
-
-A benefit of the latter is that a round-trip
-conversion `HSV` → `RGBA`→ `HSV` will result in hues that are much
-closer to the original. The `HSV_to_RGBA_CIE()` method has an optional
-parameter `warp` that when set to true (the default) will prewarp the
-hue to better match the `RGBA_to_HSV_CIE()` results, it can be set to
-False if this is of less importance.
+A benefit of the latter is that a round-trip conversion `HSV` →
+`RGBA`→ `HSV` will result in hues that are much closer to the
+original. The `HSV_to_RGBA_CIE()` method has an optional parameter
+`warp` that when set to true (the default) will prewarp the hue to
+better match the `RGBA_to_HSV_CIE()` results.  `warp` uses a 6th-order
+polynomial fit to warp the input hue value; if round-trip hue matching
+is of less importance then `warp` mat be set to False to skip this
+computation.
 
 
 ## Contents of this repository:
